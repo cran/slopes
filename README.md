@@ -1,3 +1,4 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # slopes package
@@ -9,20 +10,21 @@
 coverage](https://codecov.io/gh/ropensci/slopes/graph/badge.svg)](https://app.codecov.io/gh/ropensci/slopes)
 [![Status at rOpenSci Software Peer
 Review](https://badges.ropensci.org/420_status.svg)](https://github.com/ropensci/software-review/issues/420)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/slopes)](https://CRAN.R-project.org/package=slopes)
 <!-- badges: end -->
 
 The **slopes** R package calculates the slope (longitudinal steepness,
 also known as gradient) of roads, rivers and other linear (simple)
 features, based on two main inputs:
 
-  - [vector](https://r.geocompx.org/spatial-class.html) linestring
-    geometries defined by classes in the
-    [`sf`](https://r-spatial.github.io/sf/) package
-  - [raster](https://r.geocompx.org/spatial-class.html) objects with
-    pixel values reporting average height, commonly known as digital
-    elevation model (**DEM**) datasets, defined by classes in the
-    [`raster`](https://cran.r-project.org/package=raster) or more recent
-    [`terra`](https://rspatial.org/terra) packages
+- [vector](https://r.geocompx.org/spatial-class.html) linestring
+  geometries defined by classes in the
+  [`sf`](https://r-spatial.github.io/sf/) package
+- [raster](https://r.geocompx.org/spatial-class.html) objects with pixel
+  values reporting average height, commonly known as digital elevation
+  model (**DEM**) datasets, defined by classes in the
+  [`terra`](https://rspatial.org/terra) package (`SpatRaster`)
 
 Data on slopes are useful in many fields of research, including
 [hydrology](https://en.wikipedia.org/wiki/Stream_gradient), natural
@@ -35,9 +37,8 @@ recreational and competitive sports such as
 [hiking](https://trailism.com/trail-grades/), and
 [skiing](https://www.snowplaza.co.uk/blog/16682-skiing-steeps-what-does-gradient-mean-ski-piste/).
 Slopes are also also important in some branches of [transport and
-emissions
-modelling](https://doi.org/10.1016/j.trpro.2016.05.258)
-and [ecology](https://doi.org/10.1016/j.ncon.2016.10.001). See the
+emissions modelling](https://doi.org/10.1016/j.trpro.2016.05.258) and
+[ecology](https://doi.org/10.1016/j.ncon.2016.10.001). See the
 [`intro-to-slopes`
 vignette](https://docs.ropensci.org/slopes/articles/intro-to-slopes.html)
 for details on fields using slope data and the need for this package.
@@ -69,13 +70,12 @@ gradient by default). - an elevation model, available on your machine.
 
 ### Installation
 
-<!-- You can install the released version of slopes from [CRAN](https://CRAN.R-project.org) with: -->
+Install the released version of slopes from
+[CRAN](https://CRAN.R-project.org) with:
 
-<!-- ``` r -->
-
-<!-- install.packages("slopes") -->
-
-<!-- ``` -->
+``` r
+install.packages("slopes")
+```
 
 Install the development version from [GitHub](https://github.com/) with:
 
@@ -87,10 +87,11 @@ remotes::install_github("ropensci/slopes")
 #### Installation for DEM downloads
 
 If you do not already have DEM data and want to make use of the
-package’s ability to download them using the `ceramic` package,
-install the package with suggested dependencies, as follows:
+package’s ability to download them using the `ceramic` package, install
+the package with suggested dependencies, as follows:
 
 ``` r
+install.packages("slopes", dependencies = "Suggests")
 # install.packages("remotes")
 remotes::install_github("ropensci/slopes", dependencies = "Suggests")
 ```
@@ -141,8 +142,7 @@ necessary elevation information from Mapbox. You can also this use a
 local DEM (`dem = ...`), as shown in the example below:
 
 ``` r
-sf_linestring_xyz_local = elevation_add(sf_linestring, dem = dem_lisbon_raster)
-#> Loading required namespace: raster
+sf_linestring_xyz_local = elevation_add(sf_linestring, dem = dem_lisbon())
 ```
 
 In both cases you can obtain the average gradient of the linestring with
@@ -156,7 +156,7 @@ slope_xyz(sf_linestring_xyz_local)
 plot_slope(sf_linestring_xyz_local)
 ```
 
-<img src="man/figures/README-elevationprofile-1.png" width="100%" />
+![](man/figures/README-elevationprofile-1.png)<!-- -->
 
 *See more functions in [Get
 started](https://docs.ropensci.org/slopes/articles/slopes.html)
@@ -164,15 +164,15 @@ vignette.*
 
 ## See more in vignettes
 
-  - [Get started](https://docs.ropensci.org/slopes/articles/slopes.html)
-  - [An introduction to
-    slopes](https://docs.ropensci.org/slopes/articles/intro-to-slopes.html)
-  - [Reproducible example: gradients of a road network for a given
-    city](https://docs.ropensci.org/slopes/articles/roadnetworkcycling.html)
-  - [Verification of
-    slopes](https://docs.ropensci.org/slopes/articles/verification.html)
-  - [Benchmarking slopes
-    calculation](https://docs.ropensci.org/slopes/articles/benchmark.html)
+- [Get started](https://docs.ropensci.org/slopes/articles/slopes.html)
+- [An introduction to
+  slopes](https://docs.ropensci.org/slopes/articles/intro-to-slopes.html)
+- [Reproducible example: gradients of a road network for a given
+  city](https://docs.ropensci.org/slopes/articles/roadnetworkcycling.html)
+- [Verification of
+  slopes](https://docs.ropensci.org/slopes/articles/verification.html)
+- [Benchmarking slopes
+  calculation](https://docs.ropensci.org/slopes/articles/benchmark.html)
 
 ## Code of Conduct
 

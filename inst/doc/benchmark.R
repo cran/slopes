@@ -7,15 +7,13 @@ knitr::opts_chunk$set(
 ## ----setup--------------------------------------------------------------------
 library(slopes)
 library(bench)
-library(raster)
 
 ## ----results='hide'-----------------------------------------------------------
-e = dem_lisbon_raster
+e = dem_lisbon()
 r = lisbon_road_network
-et = terra::rast(e)
 res = bench::mark(check = FALSE,
-  slope_raster = slope_raster(r, e),
-  slope_terra = slope_raster(r, et)
+  bilinear = slope_raster(r, e),
+  simple   = slope_raster(r, e, method = "simple")
 )
 
 ## -----------------------------------------------------------------------------
@@ -25,18 +23,14 @@ res
 round(res$`itr/sec` * nrow(r))
 
 ## ----results='hide'-----------------------------------------------------------
-e = dem_lisbon_raster
-r = lisbon_road_network
-res = bench::mark(check = FALSE,
-  bilinear1 = slope_raster(r, e),
-  bilinear2 = slope_raster(r, et),
-  simple1 = slope_raster(r, e, method = "simple"),
-  simple2 = slope_raster(r, et, method = "simple")
+res2 = bench::mark(check = FALSE,
+  bilinear = slope_raster(r, e, method = "bilinear"),
+  simple   = slope_raster(r, e, method = "simple")
 )
 
 ## -----------------------------------------------------------------------------
-res
+res2
 
 ## -----------------------------------------------------------------------------
-round(res$`itr/sec` * nrow(r))
+round(res2$`itr/sec` * nrow(r))
 

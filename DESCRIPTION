@@ -1,6 +1,6 @@
 Package: slopes
 Title: Calculate Slopes of Roads, Rivers and Trajectories
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
     person("Robin", "Lovelace", email = "rob00x@gmail.com", role = c("aut", "cre", "cph"),
       comment = c(ORCID = "0000-0001-5679-6536")),
@@ -25,16 +25,16 @@ URL: https://github.com/ropensci/slopes/,
 BugReports: https://github.com/ropensci/slopes/issues
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.2
-Imports: sf, raster, methods, pbapply, geodist, colorspace
+Imports: sf, terra, methods, pbapply, geodist, colorspace
 Depends: R (>= 2.10)
-Suggests: terra, knitr, rmarkdown, ceramic, bookdown, covr, testthat,
+Suggests: knitr, rmarkdown, ceramic, bookdown, covr, testthat,
         osmextract, stplanr, dplyr, tmap, leaflet, bench, rlang
 Config/Needs/website: generics
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
 NeedsCompilation: no
-Packaged: 2025-06-19 00:30:49 UTC; robin
+Packaged: 2026-06-16 21:27:59 UTC; robin
 Author: Robin Lovelace [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0001-5679-6536>),
   Rosa Félix [aut] (ORCID: <https://orcid.org/0000-0002-5642-6006>),
@@ -46,4 +46,4 @@ Author: Robin Lovelace [aut, cre, cph] (ORCID:
     https://github.com/ropensci/software-review/issues/420#issuecomment-858231647)
 Maintainer: Robin Lovelace <rob00x@gmail.com>
 Repository: CRAN
-Date/Publication: 2025-06-23 10:40:02 UTC
+Date/Publication: 2026-06-17 07:20:08 UTC

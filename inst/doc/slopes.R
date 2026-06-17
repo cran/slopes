@@ -20,14 +20,13 @@ knitr::opts_chunk$set(
 ## -----------------------------------------------------------------------------
 library(slopes)
 library(sf)
-library(raster)
 
 # Load example data
 data(lisbon_route)
-data(dem_lisbon_raster)
+dem_lisbon <- dem_lisbon()
 
 ## -----------------------------------------------------------------------------
-sf_linestring_xyz_local = elevation_add(lisbon_route, dem = dem_lisbon_raster)
+sf_linestring_xyz_local <- elevation_add(lisbon_route, dem = dem_lisbon)
 head(sf::st_coordinates(sf_linestring_xyz_local))
 
 ## ----eval=FALSE---------------------------------------------------------------
@@ -36,27 +35,37 @@ head(sf::st_coordinates(sf_linestring_xyz_local))
 # # head(sf::st_coordinates(sf_linestring_xyz_mapbox))
 
 ## -----------------------------------------------------------------------------
-slope = slope_xyz(sf_linestring_xyz_local)
+slope <- slope_xyz(sf_linestring_xyz_local)
 slope
 
 ## -----------------------------------------------------------------------------
-plot_slope(sf_linestring_xyz_local)
+# ensure a palette and breaks exist
+brks <- c(3, 6, 10, 20, 40, 100)
+pal <- slopes_palette(length(brks) - 1)
+
+plot_slope(sf_linestring_xyz_local, pal = pal, brks = brks)
 
 ## -----------------------------------------------------------------------------
-lisbon_route_segments = sf::st_segmentize(lisbon_route, dfMaxLength = 100) # Arbitrary length
-lisbon_route_segments = sf::st_cast(lisbon_route_segments, "LINESTRING")
-# Add elevation to segments
-lisbon_route_segments_xyz = elevation_add(lisbon_route_segments, dem = dem_lisbon_raster)
-
-## -----------------------------------------------------------------------------
-lisbon_route_segments_xyz$slope = slope_xyz(lisbon_route_segments_xyz)
+lisbon_route_xyz <- elevation_add(lisbon_route, dem = dem_lisbon())
+lisbon_route_segments_xyz <- route_to_segments(lisbon_route_xyz)
+lisbon_route_segments_xyz$slope <- slope_xyz(lisbon_route_segments_xyz)
 summary(lisbon_route_segments_xyz$slope)
 
-## ----eval=FALSE---------------------------------------------------------------
-# # Requires tmap package
-# # library(tmap)
-# # qtm(lisbon_route_segments_xyz, lines.col = "slope", lines.lwd = 3)
+## -----------------------------------------------------------------------------
+plot(st_geometry(lisbon_route_segments_xyz),
+  col = heat.colors(length(lisbon_route_segments_xyz$slope))[rank(lisbon_route_segments_xyz$slope)],
+  lwd = 3, main = "Slope by vertex segments"
+)
+
+## ----warning=FALSE------------------------------------------------------------
+lisbon_route_100m <- stplanr::line_segment(lisbon_route, segment_length = 100)
+lisbon_route_100m_xyz <- elevation_add(lisbon_route_100m, dem = dem_lisbon())
+lisbon_route_100m_xyz$slope <- slope_xyz(lisbon_route_100m_xyz)
+summary(lisbon_route_100m_xyz$slope)
 
 ## -----------------------------------------------------------------------------
-plot(st_geometry(lisbon_route_segments_xyz), col = heat.colors(length(lisbon_route_segments_xyz$slope))[rank(lisbon_route_segments_xyz$slope)], lwd = 3)
+plot(st_geometry(lisbon_route_100m_xyz),
+  col = heat.colors(length(lisbon_route_100m_xyz$slope))[rank(lisbon_route_100m_xyz$slope)],
+  lwd = 3, main = "Slope by 100 m segments"
+)
 
