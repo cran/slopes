@@ -101,7 +101,7 @@ data(lisbon_route)
 dem_lisbon <- dem_lisbon()
 ```
 
-## Add elevation to a linestring
+## Add elevation to linestrings or points
 
 If you have a 2D linestring and a DEM, you can add elevation data to the linestring using `elevation_add()`:
 
@@ -118,6 +118,8 @@ If you don't have a local DEM, `elevation_add()` can download elevation data (th
 # head(sf::st_coordinates(sf_linestring_xyz_mapbox))
 ```
 
+You can also use `elevation_add()` with points.
+
 ## Calculate slope
 
 Once you have a 3D linestring (with XYZ coordinates), you can calculate its average slope using `slope_xyz()`:
@@ -132,11 +134,9 @@ slope
 You can visualize the elevation profile of a 3D linestring using `plot_slope()`:
 
 ```{r}
-# ensure a palette and breaks exist
-brks <- c(3, 6, 10, 20, 40, 100)
-pal <- slopes_palette(length(brks) - 1)
-
-plot_slope(sf_linestring_xyz_local, pal = pal, brks = brks)
+# For plot_slope() use a symmetric palette: steep slopes are red on both sides
+# (downhill and uphill), gentle slopes in the middle are green.
+plot_slope(sf_linestring_xyz_local, pal = c(rev(slope_colors), slope_colors))
 ```
 
 ## Working with segments
@@ -156,8 +156,13 @@ summary(lisbon_route_segments_xyz$slope)
 ```
 
 ```{r}
+# Segments are coloured by steepness (absolute slope), regardless of direction
+# (uphill or downhill). slope_breaks are in proportions, matching slope_xyz() output.
+col_idx <- cut(abs(lisbon_route_segments_xyz$slope),
+  breaks = slope_breaks, labels = FALSE, include.lowest = TRUE
+)
 plot(st_geometry(lisbon_route_segments_xyz),
-  col = heat.colors(length(lisbon_route_segments_xyz$slope))[rank(lisbon_route_segments_xyz$slope)],
+  col = slope_colors[col_idx],
   lwd = 3, main = "Slope by vertex segments"
 )
 ```
@@ -175,8 +180,11 @@ summary(lisbon_route_100m_xyz$slope)
 ```
 
 ```{r}
+col_idx <- cut(abs(lisbon_route_100m_xyz$slope),
+  breaks = slope_breaks, labels = FALSE, include.lowest = TRUE
+)
 plot(st_geometry(lisbon_route_100m_xyz),
-  col = heat.colors(length(lisbon_route_100m_xyz$slope))[rank(lisbon_route_100m_xyz$slope)],
+  col = slope_colors[col_idx],
   lwd = 3, main = "Slope by 100 m segments"
 )
 ```

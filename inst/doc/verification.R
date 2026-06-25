@@ -9,7 +9,7 @@ library(slopes)
 library(sf)
 
 ## ----eval=FALSE---------------------------------------------------------------
-# u = "https://downloads.rijkswaterstaatdata.nl/nwb-wegen/geogegevens/shapefile/NWB_hoogtebestand/01-10-2024%20Hoogtes%20Rijkswegen.zip"
+# u = "https://downloads.rijkswaterstaatdata.nl/nwb-wegen/geogegevens/shapefile/NWB_hoogtebestand/01-10-2024%20Hoogtes_Rijkswegen.zip"
 # f_zip = "NWB_hoogtebestand.zip"
 # if (!file.exists(f_zip)) {
 #   download.file(u, f_zip)
@@ -70,118 +70,68 @@ library(sf)
 #   tmap_mode("maplibre")
 #   m
 # }
+
+## ----eval=FALSE---------------------------------------------------------------
+# # Load the NL data (see code above) and focus on South Limburg
+# roads_wgs84 = sf::st_transform(roads_nl, 4326)
+# coords_centroid = sf::st_coordinates(sf::st_centroid(st_geometry(roads_wgs84)))
+# in_limburg = coords_centroid[, "Y"] > 50.75 &
+#              coords_centroid[, "Y"] < 51.0 &
+#              coords_centroid[, "X"] > 5.6 &
+#              coords_centroid[, "X"] < 6.1
+# roads_limburg = roads_nl[in_limburg, ]
 # 
-# # DEM for eu:
-# install.packages("CopernicusDEM")
-# system("msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi")
-# # Test it's installed:
-# system("aws --version")
-# # Find location of aws cli from powershell (equivalent of `which aws` on Linux):
-# # Get-Command aws | Select-Object -ExpandProperty Source
-# # C:\Program Files\Amazon\AWSCLIV2\aws.exe
-# current_path = Sys.getenv("PATH")
+# # Pick 30 segments with most Z variation
+# get_z_range = function(geom) {
+#   c = sf::st_coordinates(geom)
+#   if (nrow(c) < 2) return(0)
+#   diff(range(c[, "Z"]))
+# }
+# z_ranges = sapply(sf::st_geometry(roads_limburg), get_z_range)
+# top_idx = order(z_ranges, decreasing = TRUE)[1:30]
+# roads_sample = roads_limburg[top_idx, ]
 # 
-# aws_path = "C:\\Program Files\\Amazon\\AWSCLIV2"
-# new_path = paste(aws_path, current_path, sep = ";")
-# Sys.setenv(PATH = new_path)
-# # Now aws should work
-# system("aws --version")
-# # Download DEM for Brussels 6 km from center
-# zones = zonebuilder::zb_zone("Brussels", n_circles = 3)
-# region = sf::st_union(zones$geometry) |>
-#   sf::st_make_valid()
-# sf::sf_use_s2(TRUE) # disable s2 for this operation
-# region_plus_100m = sf::st_buffer(region, dist = 100)
-# mapview::mapview(region) +
-#   mapview::mapview(region_plus_100m)
-# sf::sf_use_s2(FALSE) # disable s2 for this operation
-# dir_save_tifs = "dems-brussels"
-# dem = CopernicusDEM::aoi_geom_save_tif_matches(
-#   sf_or_file = region_plus_100m,
-#   dir_save_tifs = dir_save_tifs,
-#   resolution = 30,
-#   crs_value = 4326,
-#   threads = parallel::detectCores(),
-#   verbose = TRUE
-# )
-# dems = list.files(dir_save_tifs, full.names = TRUE)
-# dem_terra = terra::rast(dems)
-# names(dem_terra)
-# dem_cropped = terra::crop(dem_terra, region_plus_100m)
-# mapview::mapview(dem_cropped)
-# travel_network = osmactive::get_travel_network(
-#   region,
-#   boundary = region,
-#   boundary_type = "clipsrc"
-# )
-# plot(travel_network$geometry)
-# travel_network = travel_network |>
-#   sf::st_filter(region, .predicate = sf::st_within)
+# # Download DEM via elevatr (AWS Open Data, no API key required)
+# library(elevatr)
+# roads_sample_wgs84 = sf::st_transform(roads_sample, 4326)
+# bb = sf::st_bbox(roads_sample_wgs84)
+# # Buffer the bbox by ~1 km to ensure all vertices are covered
+# bb_mat = matrix(c(
+#   bb["xmin"] - 0.01, bb["ymin"] - 0.01,
+#   bb["xmax"] + 0.01, bb["ymin"] - 0.01,
+#   bb["xmax"] + 0.01, bb["ymax"] + 0.01,
+#   bb["xmin"] - 0.01, bb["ymax"] + 0.01,
+#   bb["xmin"] - 0.01, bb["ymin"] - 0.01
+# ), ncol = 2, byrow = TRUE)
+# bb_sf = sf::st_sf(geometry = sf::st_sfc(sf::st_polygon(list(bb_mat)), crs = 4326))
+# dem_elevatr = get_elev_raster(bb_sf, z = 10, clip = "bbox")
+# # Project DEM to match the NL data CRS (EPSG:28992)
+# dem_28992 = terra::project(terra::rast(dem_elevatr), "EPSG:28992", method = "bilinear")
 # 
-# cycle_net = osmactive::get_cycling_network(travel_network)
-# drive_net = osmactive::get_driving_network(travel_network)
-# cycle_net = osmactive::distance_to_road(cycle_net, drive_net)
-# cycle_net = osmactive::classify_cycle_infrastructure(cycle_net, include_mixed_traffic = TRUE)
-# names(cycle_net)
-# mapview::mapview(cycle_net, zcol = "cycle_segregation")
-# nrow(cycle_net)
-# # Calculate slopes with the slopes package:
-# # Add elevation to cycle network segments
+# # Prepare roads: cast to LINESTRING and record actual Z values
+# roads_ls = sf::st_cast(roads_sample, "LINESTRING")
+# coords_before = sf::st_coordinates(roads_ls)
+# actual_z = coords_before[, "Z"]
 # 
-# sf::st_crs(dem_cropped) == sf::st_crs(cycle_net)
-# # check the extents of both:
-# mapview::mapview(dem_cropped) + mapview::mapview(cycle_net)
+# # Add elevation from the DEM using the slopes package
+# roads_with_z = slopes::elevation_add(roads_ls, dem = dem_28992)
+# coords_after = sf::st_coordinates(roads_with_z)
+# est_z = coords_after[, "Z"]
 # 
-# cycle_net_clean = sf::st_cast(cycle_net, "LINESTRING")
-# cycle_net_xyz = elevation_add(cycle_net_clean, dem = dem_cropped)
-# summary(sf::st_geometry_type(cycle_net_xyz))
+# # Compare Z values
+# z_diff = est_z - actual_z
+# cat("Z RMSE:", round(sqrt(mean(z_diff^2)), 2), "m\n")
+# cat("Z MAE:", round(mean(abs(z_diff)), 2), "m\n")
+# cat("Z correlation (r):", round(cor(est_z, actual_z), 3), "\n")
+# cat("Z mean bias:", round(mean(z_diff), 2), "m\n")
 # 
-# # Calculate slopes for each segment
-# cycle_net_xyz$slope = slope_xyz(cycle_net_xyz, lonlat = TRUE, fun = slope_matrix_weighted)
-# # cycle_net_xyz$slope = slope_xyz(cycle_net_xyz, lonlat = TRUE, fun = slope_matrix_mean)
-# summary(cycle_net_xyz$slope)
-# # Convert to percentage:
-# cycle_net_xyz = cycle_net_xyz |>
-#   # Convert to factor with greater than 5 being "5+"
-#   dplyr::mutate(
-#     slope_percent = dplyr::case_when(
-#       slope < 0.02 ~ as.character("0-2"),
-#       slope < 0.05 ~ as.character("2-5"),
-#       slope < 0.08 ~ as.character("5-8"),
-#       TRUE ~ "8+"
-#     )
-#   )
-# table(cycle_net_xyz$slope_percent)
-# 
-# # Drop z dimension
-# cycle_net_slopes = sf::st_zm(cycle_net_xyz) |>
-#   dplyr::transmute(osm_id, highway, cycle_segregation, slope = round(slope, 3), slope_percent)
-# summary(duplicated(cycle_net_slopes$geometry))
-# mapview::mapview(cycle_net_slopes, zcol = "slope_percent", legend = TRUE)
-# sf::write_sf(cycle_net_slopes, "cycle_net_slopes_brussels.gpkg", delete_dsn = TRUE)
-# system("gh release upload v1.0.1 cycle_net_slopes_brussels.gpkg --clobber")
-# cycle_net_slopes = sf::read_sf("cycle_net_slopes_brussels.gpkg")
-# 
-# # install cran version
-# remotes::install_dev("tmap")
-# # Save with tmap
-# library(tmap)
-# v = cols4all::c4a("brewer.rd_yl_gn", n = 4) |>
-#   rev()
-# m = tm_shape(cycle_net_slopes) +
-#   tm_lines(
-#     col = "slope_percent",
-#     col.scale = tm_scale(values = v),
-#     lwd = 2,
-#     popup.vars = FALSE
-# )
-# m
-# tmap_save(m, "cycle_net_slopes_brussels.html")
-# browseURL("cycle_net_slopes_brussels.html")
-# system("gh release upload v1.0.1 cycle_net_slopes_brussels.html --clobber")
-# # url of the file:
-# u_release = "https://github.com/ropensci/slopes/releases/download/v1.0.1/cycle_net_slopes_brussels.html"
-# download.file(u_release, "cycle_net_slopes_brussels.html")
+# # Compare slopes (both in EPSG:28992, so lonlat = FALSE)
+# slopes_actual = slopes::slope_xyz(roads_ls, lonlat = FALSE) * 100
+# slopes_est = slopes::slope_xyz(roads_with_z, lonlat = FALSE) * 100
+# cat("Slope correlation (r):",
+#     round(cor(slopes_actual, slopes_est, use = "complete.obs"), 3), "\n")
+# cat("Slope RMSE:",
+#     round(sqrt(mean((slopes_est - slopes_actual)^2, na.rm = TRUE)), 3), "%\n")
 
 ## ----eval=FALSE---------------------------------------------------------------
 # download.file("https://ndownloader.figshare.com/files/14331185", "3DGRT_AXIS_EPSG25830_v2.zip")

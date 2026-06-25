@@ -357,11 +357,11 @@ second using different interpolation methods:</p>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 6</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; 1 bilinear       20ms   20.3ms      48.7   17.98MB     39.8</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; 2 simple       17.3ms   17.7ms      56.3    2.01MB     41.3</span></span></code></pre></div>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; 1 bilinear     21.2ms   21.8ms      45.5   17.89MB     33.1</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; 2 simple       18.3ms   18.7ms      53.0    1.88MB     35.4</span></span></code></pre></div>
 <p>That is approximately</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">round</span>(res<span class="sc">$</span><span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> <span class="sc">*</span> <span class="fu">nrow</span>(r))</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] 13194 15249</span></span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] 12335 14376</span></span></code></pre></div>
 <p>routes per second using <code>bilinear</code> and <code>simple</code>
 interpolation methods, respectively.</p>
 <p>To go faster, you can chose the <code>simple</code> method to gain
@@ -374,10 +374,10 @@ some speed at the expense of accuracy:</p>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 6</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; 1 bilinear       21ms   21.7ms      45.6    1.86MB     41.5</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; 2 simple       17.3ms   18.1ms      54.4    1.94MB     49.4</span></span></code></pre></div>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; 1 bilinear     21.7ms   22.7ms      44.2    1.73MB     29.5</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; 2 simple       18.8ms   19.3ms      50.8    1.81MB     39.1</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">round</span>(res2<span class="sc">$</span><span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> <span class="sc">*</span> <span class="fu">nrow</span>(r))</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; [1] 12369 14735</span></span></code></pre></div>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; [1] 11973 13764</span></span></code></pre></div>
 </div>
 
 

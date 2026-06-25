@@ -39,11 +39,9 @@ slope <- slope_xyz(sf_linestring_xyz_local)
 slope
 
 ## -----------------------------------------------------------------------------
-# ensure a palette and breaks exist
-brks <- c(3, 6, 10, 20, 40, 100)
-pal <- slopes_palette(length(brks) - 1)
-
-plot_slope(sf_linestring_xyz_local, pal = pal, brks = brks)
+# For plot_slope() use a symmetric palette: steep slopes are red on both sides
+# (downhill and uphill), gentle slopes in the middle are green.
+plot_slope(sf_linestring_xyz_local, pal = c(rev(slope_colors), slope_colors))
 
 ## -----------------------------------------------------------------------------
 lisbon_route_xyz <- elevation_add(lisbon_route, dem = dem_lisbon())
@@ -52,8 +50,13 @@ lisbon_route_segments_xyz$slope <- slope_xyz(lisbon_route_segments_xyz)
 summary(lisbon_route_segments_xyz$slope)
 
 ## -----------------------------------------------------------------------------
+# Segments are coloured by steepness (absolute slope), regardless of direction
+# (uphill or downhill). slope_breaks are in proportions, matching slope_xyz() output.
+col_idx <- cut(abs(lisbon_route_segments_xyz$slope),
+  breaks = slope_breaks, labels = FALSE, include.lowest = TRUE
+)
 plot(st_geometry(lisbon_route_segments_xyz),
-  col = heat.colors(length(lisbon_route_segments_xyz$slope))[rank(lisbon_route_segments_xyz$slope)],
+  col = slope_colors[col_idx],
   lwd = 3, main = "Slope by vertex segments"
 )
 
@@ -64,8 +67,11 @@ lisbon_route_100m_xyz$slope <- slope_xyz(lisbon_route_100m_xyz)
 summary(lisbon_route_100m_xyz$slope)
 
 ## -----------------------------------------------------------------------------
+col_idx <- cut(abs(lisbon_route_100m_xyz$slope),
+  breaks = slope_breaks, labels = FALSE, include.lowest = TRUE
+)
 plot(st_geometry(lisbon_route_100m_xyz),
-  col = heat.colors(length(lisbon_route_100m_xyz$slope))[rank(lisbon_route_100m_xyz$slope)],
+  col = slope_colors[col_idx],
   lwd = 3, main = "Slope by 100 m segments"
 )
 
